@@ -20,13 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!u1gi_vb_efn1a&!&2k5!g*6ap5$qs60835l7yp_=8p^-6=kdn'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(os.environ.get('DEBUG'))=='1'
 
 ALLOWED_HOSTS = []
 
+# Custom user model
+AUTH_USER_MODEL = 'account.Account'
 
 # Application definition
 
@@ -36,7 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # 'django.contrib.staticfiles',
+
+    # Third party apps
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'phonenumber_field',
+    'knox',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'src.urls'
@@ -73,12 +84,54 @@ WSGI_APPLICATION = 'src.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# Postgresql
+DB_NAME = os.environ.get('DB_NAME')
+DB_USER = os.environ.get('DB_USER')
+DB_PASSWORD = os.environ.get('DB_PASSWORD')
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': 'localhost',
+        'PORT': 5432,
     }
 }
+
+
+# Channels
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [(os.environ.get('REDIS_HOST'), os.environ.get('REDIS_PORT'))],
+#         },
+#     },
+# }
+
+
+# Cors
+CORS_ALLOWED_ORIGINS = [ # Allowed IP addreses
+    'http://localhost:3000',
+]
+
+CORS_EXPOSE_HEADERS = [ # Allowed custom headers
+    "custom-header",
+]
+
+
+# Rest
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+          'knox.auth.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+APPEND_SLASH=False
 
 
 # Password validation
