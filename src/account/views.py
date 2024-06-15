@@ -13,6 +13,11 @@ from rest_framework import permissions
 from rest_framework.authentication import SessionAuthentication
 from knox.models import AuthToken
 
+from app import (
+	permissions as app_permissions,
+	custom_view_mixins,
+)
+
 from .serializers import (
 	SignUpSerializer,
 	SignInSerializer,
@@ -20,7 +25,7 @@ from .serializers import (
 	AccountDeletionSerializer,
 )
 
-from apps import permissions as app_permissions
+from account.models import Account
 
 
 # Create your views here.
@@ -37,7 +42,7 @@ class SignUpView(generics.CreateAPIView):
 		serializer.is_valid(raise_exception=True)
 		self.perform_create(serializer)
 
-		auth_user_account = authenticate(phone_number=data.get("phone_number"), password=data.get("password"))
+		auth_user_account = authenticate(username=data.get("username"), password=data.get("password"))
 		login(request, auth_user_account)
 		headers = self.get_success_headers(serializer.data)
 
@@ -53,7 +58,7 @@ class SignUpView(generics.CreateAPIView):
 
 class SignInView(generics.GenericAPIView):
 	serializer_class = SignInSerializer
-	permission_classes = (app_permissions.isNotAuthenticated,)
+	permission_classes = (app_permissions.IsNotAuthenticated,)
 
 	def post(self, request, *args, **kwargs):
 		serializer = self.get_serializer(data=request.data)
@@ -78,7 +83,7 @@ class AccountViewSetPagination(pagination.PageNumberPagination):
 	max_page_size = 25
 
 # Listing & Retrieving & Updating(via settings)
-class AccountViewSet(mixins.CustomUpdateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin,viewsets.GenericViewSet):
+class AccountViewSet(custom_view_mixins.CustomUpdateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 
 	queryset = Account.objects.all().order_by('-username')
 	serializer_class = AccountSerializer

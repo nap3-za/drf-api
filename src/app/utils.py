@@ -22,3 +22,10 @@ def calculate_timestamp(timestamp):
 		str_time = datetime.strftime(timestamp, "%m/%d/%Y")
 		ts = f"{str_time}"
 	return str(ts)
+
+def field_choices_to_list(data_tuple=None):
+	if data_tuple:
+		data_list = []
+		for item in data_tuple:
+			data_list.append(item[0])
+		return data_list

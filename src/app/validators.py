@@ -3,7 +3,6 @@ from django.utils import timezone
 from rest_framework import serializers
 from .utils import field_choices_to_list
 
-from .utils import setup_school_data 
 
 validation_error_type = {
 	True:serializers.ValidationError,
