@@ -131,7 +131,6 @@ class SignUpSerializer(BaseAccountSerializer):
 			"username",
 			"gender",
 			"email",
-			"phone_number",
 			"password",
 			"password2"
 		]
@@ -153,7 +152,6 @@ class SignUpSerializer(BaseAccountSerializer):
 			username=validated_data.get('username'),
 			email=validated_data.get('email'),
 			gender=validated_data.get('gender'),
-			phone_number=validated_data.get('phone_number'),
 			password=password,
 		)
 
@@ -174,17 +172,14 @@ class SignInSerializer(serializers.Serializer):
 	username	   				 	= serializers.CharField(max_length=125)
 
 	def validate(self, data):
-		try:
-			username = data.get("username")
-			password = data.get("password")
-			account = authenticate(username=username, password=password)
-			
-			if account and not account.is_active:
-				raise ValueError("The account has been deleted");
-
-		except:
+		username = data.get("username")
+		password = data.get("password")
+		account = authenticate(username=username, password=password)
+		
+		if account != None and not account.is_active:
+			raise ValueError("The account has been deleted");
+		elif account == None:
 			raise serializers.ValidationError({"error":"Invalid credentials"})
-
 		return account
 
 
@@ -195,17 +190,13 @@ class AccountDeletionSerializer(serializers.Serializer):
 	username	   				 	= serializers.CharField(max_length=125, required=True)
 
 	def validate(self, data):
-		try:
-			username = data.get("username")
-			password = data.get("password")
-			account = authenticate(username=username, password=password)
-			
-			if account == None:
-				raise serializers.ValidationError({"error":"Invalid credentials"})
-			elif self.instance != account:
-				raise serializers.ValidationError({"error":"You are not allowed to delete another person's account"})
-
-		except:
+		username = data.get("username")
+		password = data.get("password")
+		account = authenticate(username=username, password=password)
+		
+		if account == None:
 			raise serializers.ValidationError({"error":"Invalid credentials"})
-
+		elif self.instance != account:
+			raise serializers.ValidationError({"error":"You are not allowed to delete another person's account"})
+		
 		return data

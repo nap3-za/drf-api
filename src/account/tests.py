@@ -45,7 +45,7 @@ class AccountTests(APITestCase):
 		response = self.client.post(sign_up_url, user_data, format="json")
 
 		# Signing out
-		self.client.post(path=reverse("knox_logout"))
+		self.client.post(path=reverse("sign-out"))
 
 		# Necessary Checks
 		account = Account.objects.get(username="nfx")
@@ -75,7 +75,7 @@ class AccountTests(APITestCase):
 		self.client.credentials(HTTP_AUTHORIZATION=f"Token {sign_in_response.data['token']}")
 
 		# Signing out
-		self.client.post(path=reverse("knox_logout"))
+		self.client.post(path=reverse("sign-out"))
 
 
 	def test_account_update_delete(self):

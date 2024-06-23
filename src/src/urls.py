@@ -11,9 +11,9 @@ from account import views as account_views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('authentication/', include('knox.urls')),
     path('authentication/sign-up/', account_views.SignUpView.as_view(), name="sign-up"),
     path('authentication/sign-in/', account_views.SignInView.as_view(), name="sign-in"),
+    path('authentication/sign-out/', knox_views.LogoutView.as_view(), name="sign-out"),
     
     # Sends account data using received apiToken
     path('authentication/account/', account_views.RetrieveAccount.as_view(), name="retrieve-account"),

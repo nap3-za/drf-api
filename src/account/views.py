@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.authentication import SessionAuthentication
 from knox.models import AuthToken
+from knox.views import LoginView as KnoxLoginView
 
 from app import (
 	permissions as app_permissions,
@@ -37,12 +38,13 @@ class SignUpView(generics.CreateAPIView):
 	permission_classes = (app_permissions.IsNotAuthenticated,)
 
 	def create(self, request, *args, **kwargs):
-		data = request.data
-		serializer = self.get_serializer(data=data)
+		serializer = self.get_serializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		self.perform_create(serializer)
 
-		auth_user_account = authenticate(username=data.get("username"), password=data.get("password"))
+		auth_user_account = authenticate(
+			username=request.data.get("username"),
+			password=request.data.get("password"))
 		login(request, auth_user_account)
 		headers = self.get_success_headers(serializer.data)
 
@@ -63,15 +65,16 @@ class SignInView(generics.GenericAPIView):
 	def post(self, request, *args, **kwargs):
 		serializer = self.get_serializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
-		account = serializer.validated_data
+		auth_user_account = serializer.validated_data
+		login(request, auth_user_account)
 
 		try:
-			token = AuthToken.objects.get(account)
+			token = AuthToken.objects.get(auth_user_account)
 		except Exception:
-			token = AuthToken.objects.create(account)
+			token = AuthToken.objects.create(auth_user_account)
 
 		response_data = {
-			"user": AccountSerializer(account, context=self.get_serializer_context()).data,
+			"user": AccountSerializer(auth_user_account, context=self.get_serializer_context()).data,
 			"token": token[1]
 		}
 		return Response(response_data, status=status.HTTP_200_OK)
